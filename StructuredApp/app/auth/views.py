@@ -1,8 +1,11 @@
 from . import auth
+from .. import db
 from flask import render_template, redirect, request, url_for, flash
-from flask_login import login_user, logout_user, login_required
-from .forms import LoginForm
+from flask_login import login_user, logout_user, login_required, \
+    current_user
 from ..models import User
+from .forms import LoginForm, RegistrationForm
+
 
 # Signing In
 
@@ -27,5 +30,21 @@ def logout():
     logout_user()
     flash('You Have Been logged Out')
     return redirect(url_for('main.index'))
+
+# Define User Registration Route
+
+@auth.route('/register', methods=['GET', 'POST'])
+def register():
+    """Register a new user in our database"""
+
+    form = RegistrationForm()
+    if form.validate():
+        user = User(username=form.username.data,
+                    email=form.email.data,
+                    password=form.password.data)
+        db.session.add(user)
+        flash('You can now login')
+        return redirect(url_for('auth.login'))
+    return render_template('auth/register.html', form=form)
 
 
